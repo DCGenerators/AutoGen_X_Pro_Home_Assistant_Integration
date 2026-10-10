@@ -1,0 +1,51 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This controller is already configured.",
+      "cannot_connect": "Unable to connect to the controller."
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the controller.",
+      "invalid_auth": "The pairing token was rejected.",
+      "unknown": "Unexpected error while communicating with the controller."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "pairing_code": "Pairing code"
+        },
+        "description": "Add an AutoGen X Pro controller on your local network.",
+        "title": "Add AutoGen X Pro"
+      },
+      "zeroconf_confirm": {
+        "data": {
+          "pairing_code": "Pairing code"
+        },
+        "description": "Confirm pairing with {name} using the temporary code shown by the AutoGen app or controller setup page.",
+        "title": "Pair with {name}"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "cloud_connected": {"name": "Cloud connection"},
+      "fault": {"name": "Fault"},
+      "generator_running": {"name": "Generator running"}
+    },
+    "sensor": {
+      "ac_voltage": {"name": "AC voltage"},
+      "battery_voltage": {"name": "Battery voltage"},
+      "charge_current": {"name": "Charge current"},
+      "controller_state": {"name": "Controller state"},
+      "last_run_duration": {"name": "Last run duration"},
+      "temperature": {"name": "Temperature"},
+      "total_runtime": {"name": "Total runtime"}
+    },
+    "switch": {
+      "generator_control": {"name": "Generator control"}
+    }
+  },
+  "title": "AutoGen X Pro"
+}

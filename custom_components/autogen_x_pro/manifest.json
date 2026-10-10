@@ -1,0 +1,15 @@
+{
+  "domain": "autogen_x_pro",
+  "name": "AutoGen X Pro",
+  "codeowners": ["@DCGenerators"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/DCGenerators/AutoGen_X_Pro_Home_Assistant_Integration",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/DCGenerators/AutoGen_X_Pro_Home_Assistant_Integration/issues",
+  "requirements": [],
+  "version": "0.1.0",
+  "zeroconf": ["_autogen-x._tcp.local."]
+}
+

@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a problem with the AutoGen X Pro Home Assistant integration
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include tokens, pairing codes, Wi-Fi passwords, or cloud credentials.
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+    validations:
+      required: true
+  - type: input
+    id: firmware_version
+    attributes:
+      label: Controller firmware version
+    validations:
+      required: true
+  - type: input
+    id: device_id
+    attributes:
+      label: AutoGen device ID
+      description: This allows DC Generators to identify and support the controller.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Home Assistant diagnostics
+      description: Attach the integration diagnostics download. Its local token is redacted.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: The controller is in a safe test environment if generator control is involved.
+          required: true

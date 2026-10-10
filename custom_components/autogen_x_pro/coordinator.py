@@ -1,0 +1,33 @@
+"""Data update coordinator for AutoGen X Pro."""
+
+from __future__ import annotations
+
+import logging
+from datetime import timedelta
+from typing import Any
+
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .api import AutoGenApiClient, AutoGenApiError
+from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class AutoGenCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Fetch one authoritative controller snapshot for all entities."""
+
+    def __init__(self, hass, client: AutoGenApiClient) -> None:
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(seconds=10),
+        )
+        self.client = client
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        try:
+            return await self.client.async_get_status()
+        except AutoGenApiError as err:
+            raise UpdateFailed(str(err)) from err

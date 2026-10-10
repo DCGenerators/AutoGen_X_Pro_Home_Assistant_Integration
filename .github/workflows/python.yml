@@ -1,0 +1,22 @@
+name: Python
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check
+      - name: Compile Python sources
+        run: python -m compileall -q custom_components tools
+      - name: Exercise simulated controller contract
+        run: |
+          python tools/mock_controller.py &
+          simulator_pid=$!
+          trap 'kill "$simulator_pid"' EXIT
+          python tools/validate_controller.py --pairing-code 482731
