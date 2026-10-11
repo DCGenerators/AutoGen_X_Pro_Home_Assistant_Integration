@@ -18,6 +18,7 @@ class ControllerState:
 
     generator_running = False
     sequence = 0
+    pairing_available = True
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -93,9 +94,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         payload = self._read_json()
         if self.path == "/api/v1/pair":
+            if not ControllerState.pairing_available:
+                self._send(403, {"error": "pairing_disabled"})
+                return
             if payload.get("pairing_code") != PAIRING_CODE:
                 self._send(401, {"error": "invalid_pairing_code"})
                 return
+            ControllerState.pairing_available = False
             self._send(
                 200,
                 {

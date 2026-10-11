@@ -2,7 +2,9 @@
   "config": {
     "abort": {
       "already_configured": "This controller is already configured.",
-      "cannot_connect": "Unable to connect to the controller."
+      "cannot_connect": "Unable to connect to the controller.",
+      "reauth_successful": "The controller was reconnected successfully.",
+      "reconfigure_successful": "The controller address was updated successfully."
     },
     "error": {
       "cannot_connect": "Unable to connect to the controller.",
@@ -25,6 +27,21 @@
         },
         "description": "Confirm pairing with {name} using the temporary code shown by the AutoGen app or controller setup page.",
         "title": "Pair with {name}"
+      },
+      "reauth_confirm": {
+        "data": {
+          "pairing_code": "Pairing code"
+        },
+        "description": "Home Assistant can no longer authenticate with {name}. Generate a new temporary code from the controller's AutoGen_Local pairing page, then enter it here.",
+        "title": "Reconnect {name}"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Host",
+          "port": "Port"
+        },
+        "description": "Update the local network address for this controller.",
+        "title": "Update controller address"
       }
     }
   },

@@ -14,6 +14,8 @@ jobs:
           args: check
       - name: Compile Python sources
         run: python -m compileall -q custom_components tools
+      - name: Exercise authentication and identity rejection contract
+        run: python tools/contract_test.py
       - name: Exercise simulated controller contract
         run: |
           python tools/mock_controller.py &

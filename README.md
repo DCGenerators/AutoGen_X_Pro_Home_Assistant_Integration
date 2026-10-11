@@ -61,6 +61,62 @@ The matching firmware is built as a separate, feature-flagged target. Enabling
 Home Assistant does not replace the AutoGen cloud, mobile app, BLE, local AP, or
 OTA workflows.
 
+## How the connections coexist
+
+The Home Assistant path is local-first and independent of the existing AutoGen
+cloud path:
+
+```text
+AutoGen cloud <--- router Wi-Fi <--- controller ---> Home Assistant on the LAN
+                                      |
+                                      +-- AutoGen_Local access point
+                                      |
+                                      +-- Bluetooth/mobile app
+```
+
+The controller uses ESP32 AP+STA mode while `AutoGen_Local` is enabled. It can
+therefore keep its station connection to the router and AutoGen cloud while a
+phone is connected to the local access point. Home Assistant polls the
+controller directly on the LAN every ten seconds. The `Cloud connection` entity
+reports the controller's existing AutoGen cloud status; Home Assistant traffic
+does not pass through that cloud connection.
+
+Cloud fallback for Home Assistant is not included in the local integration. It
+requires a separately designed backend authorization contract and will not be
+enabled implicitly or by sharing the mobile app's credentials.
+
+## A clean dashboard
+
+Home Assistant integrations provide devices and entities; they do not normally
+replace or silently edit a user's dashboard. The automatically generated cards
+are functional but deliberately generic.
+
+For a compact AutoGen dashboard:
+
+1. Create a dedicated dashboard and select **Edit dashboard**.
+2. Remove the placeholder greeting card and rename `New section` to `Generator`.
+3. Add a **Tile** card for `Generator control` and set the card name to
+   `Start / stop`.
+4. Add compact tiles for `Controller state`, `Fault`, `Generator running`,
+   `Battery voltage`, `AC voltage`, and `Cloud connection`.
+5. Optionally rename the Home Assistant device to the site's generator name.
+   The permanent AutoGen device ID remains unchanged in Device Info and
+   diagnostics for support.
+
+The integration supplies translated entity names, device classes, measurement
+precision, and icons. Home Assistant combines the device name and entity name in
+some automatically generated views; setting a short card name is the standard
+way to avoid truncation there.
+
+## Recovery
+
+If a controller's local Home Assistant token is replaced, Home Assistant starts
+a reauthentication flow. Generate a new temporary code through
+`AutoGen_Local`, enter it in the repair prompt, and the existing device and
+entity identities are retained. The integration also provides **Reconfigure**
+for manually updating a controller address when automatic Zeroconf discovery is
+not available.
+
 ## Support
 
 Open a GitHub issue with the Home Assistant diagnostics download and the AutoGen

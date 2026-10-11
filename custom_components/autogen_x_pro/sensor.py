@@ -41,6 +41,7 @@ SENSORS = (
         device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=2,
     ),
     AutoGenSensorDescription(
         key="charge_current",
@@ -49,6 +50,7 @@ SENSORS = (
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=2,
     ),
     AutoGenSensorDescription(
         key="ac_voltage",
@@ -57,6 +59,7 @@ SENSORS = (
         device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
     ),
     AutoGenSensorDescription(
         key="temperature",
@@ -65,6 +68,7 @@ SENSORS = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
     ),
     AutoGenSensorDescription(
         key="controller_state",

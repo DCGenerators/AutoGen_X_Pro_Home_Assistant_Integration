@@ -1,0 +1,20 @@
+{
+  "entity": {
+    "sensor": {
+      "controller_state": {
+        "default": "mdi:state-machine"
+      },
+      "last_run_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "total_runtime": {
+        "default": "mdi:history"
+      }
+    },
+    "switch": {
+      "generator_control": {
+        "default": "mdi:engine"
+      }
+    }
+  }
+}

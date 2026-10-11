@@ -6,9 +6,10 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AutoGenApiClient, AutoGenApiError
+from .api import AutoGenApiClient, AutoGenApiError, AutoGenAuthenticationError
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,5 +30,7 @@ class AutoGenCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         try:
             return await self.client.async_get_status()
+        except AutoGenAuthenticationError as err:
+            raise ConfigEntryAuthFailed("Controller credentials were rejected") from err
         except AutoGenApiError as err:
             raise UpdateFailed(str(err)) from err

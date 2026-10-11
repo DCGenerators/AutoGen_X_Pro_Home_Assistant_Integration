@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import probatio
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
@@ -116,6 +116,106 @@ class AutoGenConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={"name": self._discovered_name},
         )
+
+    async def async_step_reauth(
+        self, entry_data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """Start local-token reauthentication for an existing controller."""
+        entry = self._get_reauth_entry()
+        self._load_discovered_values(entry)
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Exchange a fresh local pairing code and reload the existing entry."""
+        entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            try:
+                info, entry_data = await self._async_pair(
+                    {
+                        CONF_HOST: self._discovered_host,
+                        CONF_PORT: self._discovered_port,
+                        CONF_PAIRING_CODE: user_input[CONF_PAIRING_CODE],
+                    }
+                )
+            except AutoGenAuthenticationError:
+                errors["base"] = "invalid_auth"
+            except AutoGenConnectionError:
+                errors["base"] = "cannot_connect"
+            except AutoGenApiError:
+                errors["base"] = "unknown"
+            else:
+                await self.async_set_unique_id(info.device_id)
+                self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates=entry_data,
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=probatio.Schema({probatio.Required(CONF_PAIRING_CODE): str}),
+            errors=errors,
+            description_placeholders={"name": entry.title},
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Allow an existing local controller address to be changed manually."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            client = AutoGenApiClient(
+                async_get_clientsession(self.hass),
+                user_input[CONF_HOST],
+                user_input[CONF_PORT],
+                entry.data[CONF_TOKEN],
+                entry.data[CONF_DEVICE_ID],
+            )
+            try:
+                info = await client.async_get_info()
+            except AutoGenAuthenticationError:
+                errors["base"] = "invalid_auth"
+            except AutoGenConnectionError:
+                errors["base"] = "cannot_connect"
+            except AutoGenApiError:
+                errors["base"] = "unknown"
+            else:
+                await self.async_set_unique_id(info.device_id)
+                self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={
+                        **entry.data,
+                        CONF_HOST: user_input[CONF_HOST],
+                        CONF_PORT: user_input[CONF_PORT],
+                    },
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=probatio.Schema(
+                {
+                    probatio.Required(
+                        CONF_HOST, default=entry.data[CONF_HOST]
+                    ): str,
+                    probatio.Optional(
+                        CONF_PORT, default=entry.data[CONF_PORT]
+                    ): int,
+                }
+            ),
+            errors=errors,
+        )
+
+    def _load_discovered_values(self, entry: ConfigEntry) -> None:
+        """Load the existing endpoint and identity for a recovery flow."""
+        self._discovered_host = entry.data[CONF_HOST]
+        self._discovered_port = entry.data[CONF_PORT]
+        self._discovered_device_id = entry.data[CONF_DEVICE_ID]
+        self._discovered_name = entry.title
 
     async def _async_pair(self, data: dict[str, Any]):
         client = AutoGenApiClient(
