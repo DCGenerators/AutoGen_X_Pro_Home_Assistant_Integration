@@ -16,7 +16,6 @@ from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfTemperature,
-    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -31,6 +30,7 @@ class AutoGenSensorDescription(SensorEntityDescription):
     """Describe an AutoGen status field."""
 
     value_key: str
+    format_duration: bool = False
 
 
 SENSORS = (
@@ -79,16 +79,13 @@ SENSORS = (
         key="total_runtime",
         translation_key="total_runtime",
         value_key="total_runtime_seconds",
-        device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        format_duration=True,
     ),
     AutoGenSensorDescription(
         key="last_run_duration",
         translation_key="last_run_duration",
         value_key="last_run_seconds",
-        device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        format_duration=True,
     ),
 )
 
@@ -118,4 +115,20 @@ class AutoGenSensor(AutoGenEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the latest native value."""
-        return self.coordinator.data.get(self.entity_description.value_key)
+        value = self.coordinator.data.get(self.entity_description.value_key)
+        if not self.entity_description.format_duration or value is None:
+            return value
+        seconds = max(0, int(value))
+        hours, remainder = divmod(seconds, 3600)
+        minutes = remainder // 60
+        return f"{hours} h {minutes} min"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, int] | None:
+        """Retain the exact controller duration for diagnostics."""
+        if not self.entity_description.format_duration:
+            return None
+        value = self.coordinator.data.get(self.entity_description.value_key)
+        if value is None:
+            return None
+        return {"seconds": max(0, int(value))}
