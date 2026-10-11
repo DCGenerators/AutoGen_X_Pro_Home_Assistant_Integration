@@ -83,7 +83,8 @@ AutoGen cloud <--- router Wi-Fi <--- controller ---> Home Assistant on the LAN
 The controller uses ESP32 AP+STA mode while `AutoGen_Local` is enabled. It can
 therefore keep its station connection to the router and AutoGen cloud while a
 phone is connected to the local access point. Home Assistant polls the
-controller directly on the LAN every ten seconds. The `Cloud connection` entity
+controller directly on the LAN every two seconds so short generator start,
+retry, and pause transitions remain visible. The `Cloud connection` entity
 reports the controller's existing AutoGen cloud status; Home Assistant traffic
 does not pass through that cloud connection.
 

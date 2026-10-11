@@ -23,7 +23,11 @@ class AutoGenCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=10),
+            # Generator state transitions are operational feedback, not slow
+            # telemetry. Poll the local controller often enough for Home
+            # Assistant to show starting, retry, and pause states instead of
+            # skipping them between snapshots.
+            update_interval=timedelta(seconds=2),
         )
         self.client = client
 
