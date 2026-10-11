@@ -20,6 +20,19 @@ class ControllerState:
     fault = True
     sequence = 0
     pairing_available = True
+    settings = {
+        "revision": 1,
+        "battery_low_voltage": 11.0,
+        "battery_high_voltage": 14.7,
+        "temperature_low_c": -20.0,
+        "temperature_high_c": 100.0,
+        "schedule_enabled": False,
+        "schedule_start_hour": 8,
+        "schedule_start_minute": 0,
+        "schedule_duration_minutes": 60,
+        "schedule_utc_offset_hours": 0,
+        "schedule_week_mask": 0,
+    }
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -63,7 +76,12 @@ class Handler(BaseHTTPRequestHandler):
                     "model": "AutoGen X Pro",
                     "firmware_version": "3.4.0-ha.simulator",
                     "api_version": "1",
-                    "capabilities": ["status", "start_stop", "reset_fault"],
+                    "capabilities": [
+                        "status",
+                        "start_stop",
+                        "reset_fault",
+                        "settings",
+                    ],
                 },
             )
             return
@@ -94,6 +112,9 @@ class Handler(BaseHTTPRequestHandler):
                 },
             )
             return
+        if self.path == "/api/v1/settings":
+            self._send(200, {"device_id": DEVICE_ID, **ControllerState.settings})
+            return
         self._send(404, {"error": "not_found"})
 
     def do_POST(self) -> None:  # noqa: N802
@@ -115,8 +136,13 @@ class Handler(BaseHTTPRequestHandler):
                     "firmware_version": "3.4.0-ha.simulator",
                     "api_version": "1",
                     "access_token": ACCESS_TOKEN,
-                    "capabilities": ["status", "start_stop", "reset_fault"],
-                    "scopes": ["status", "control"],
+                    "capabilities": [
+                        "status",
+                        "start_stop",
+                        "reset_fault",
+                        "settings",
+                    ],
+                    "scopes": ["status", "control", "configure"],
                 },
             )
             return
@@ -164,6 +190,51 @@ class Handler(BaseHTTPRequestHandler):
                 "generator_running": ControllerState.generator_running,
             },
         )
+
+    def do_PATCH(self) -> None:  # noqa: N802
+        payload = self._read_json()
+        if self.path != "/api/v1/settings":
+            self._send(404, {"error": "not_found"})
+            return
+        if not self._require_authentication():
+            return
+        if payload.get("device_id") != DEVICE_ID:
+            self._send(409, {"error": "device_id_mismatch"})
+            return
+
+        allowed = set(ControllerState.settings) - {"revision"}
+        changes = {key: value for key, value in payload.items() if key != "device_id"}
+        if not changes:
+            self._send(400, {"error": "no_settings"})
+            return
+        if not changes.keys() <= allowed:
+            self._send(400, {"error": "unsupported_setting"})
+            return
+
+        candidate = {**ControllerState.settings, **changes}
+        if not 0 <= candidate["battery_low_voltage"] < candidate[
+            "battery_high_voltage"
+        ] <= 100:
+            self._send(422, {"error": "invalid_battery_thresholds"})
+            return
+        if not -55 <= candidate["temperature_low_c"] < candidate[
+            "temperature_high_c"
+        ] <= 125:
+            self._send(422, {"error": "invalid_temperature_thresholds"})
+            return
+        if not (
+            0 <= candidate["schedule_start_hour"] <= 23
+            and 0 <= candidate["schedule_start_minute"] <= 59
+            and 1 <= candidate["schedule_duration_minutes"] <= 1440
+            and -12 <= candidate["schedule_utc_offset_hours"] <= 14
+            and 0 <= candidate["schedule_week_mask"] <= 0x7F
+        ):
+            self._send(422, {"error": "invalid_schedule"})
+            return
+
+        candidate["revision"] = int(ControllerState.settings["revision"]) + 1
+        ControllerState.settings = candidate
+        self._send(200, {"device_id": DEVICE_ID, **ControllerState.settings})
 
     def log_message(self, format: str, *args: Any) -> None:
         """Keep automated test output concise."""

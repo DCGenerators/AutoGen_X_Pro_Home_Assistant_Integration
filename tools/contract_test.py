@@ -25,10 +25,11 @@ def expect_http_error(
     *,
     token: str | None = None,
     payload: dict | None = None,
+    method: str | None = None,
 ) -> dict:
     """Return a rejected JSON response and verify its status code."""
     try:
-        request_json(base_url, path, token=token, payload=payload)
+        request_json(base_url, path, token=token, payload=payload, method=method)
     except RuntimeError as err:
         message = str(err)
         marker = f"HTTP {expected_status}: "
@@ -46,6 +47,19 @@ def main() -> None:
     ControllerState.fault = True
     ControllerState.sequence = 0
     ControllerState.pairing_available = True
+    ControllerState.settings = {
+        "revision": 1,
+        "battery_low_voltage": 11.0,
+        "battery_high_voltage": 14.7,
+        "temperature_low_c": -20.0,
+        "temperature_high_c": 100.0,
+        "schedule_enabled": False,
+        "schedule_start_hour": 8,
+        "schedule_start_minute": 0,
+        "schedule_duration_minutes": 60,
+        "schedule_utc_offset_hours": 0,
+        "schedule_week_mask": 0,
+    }
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -84,9 +98,55 @@ def main() -> None:
         info = request_json(base_url, "/api/v1/info", token=ACCESS_TOKEN)
         status = request_json(base_url, "/api/v1/status", token=ACCESS_TOKEN)
         assert info["device_id"] == DEVICE_ID
+        assert "settings" in info["capabilities"]
         assert status["device_id"] == DEVICE_ID
         assert status["generator_running"] is False
         assert status["fault"] is True
+
+        settings = request_json(base_url, "/api/v1/settings", token=ACCESS_TOKEN)
+        assert settings["battery_low_voltage"] == 11.0
+        assert settings["schedule_enabled"] is False
+
+        settings_mismatch = expect_http_error(
+            409,
+            base_url,
+            "/api/v1/settings",
+            token=ACCESS_TOKEN,
+            method="PATCH",
+            payload={"device_id": "wrong-device", "schedule_enabled": True},
+        )
+        assert settings_mismatch["error"] == "device_id_mismatch"
+
+        invalid_thresholds = expect_http_error(
+            422,
+            base_url,
+            "/api/v1/settings",
+            token=ACCESS_TOKEN,
+            method="PATCH",
+            payload={"device_id": DEVICE_ID, "battery_low_voltage": 15.0},
+        )
+        assert invalid_thresholds["error"] == "invalid_battery_thresholds"
+
+        confirmed_settings = request_json(
+            base_url,
+            "/api/v1/settings",
+            token=ACCESS_TOKEN,
+            method="PATCH",
+            payload={
+                "device_id": DEVICE_ID,
+                "battery_low_voltage": 12.0,
+                "schedule_enabled": True,
+                "schedule_start_hour": 9,
+                "schedule_start_minute": 30,
+                "schedule_duration_minutes": 90,
+                "schedule_utc_offset_hours": 2,
+                "schedule_week_mask": 0b0010101,
+            },
+        )
+        assert confirmed_settings["battery_low_voltage"] == 12.0
+        assert confirmed_settings["schedule_enabled"] is True
+        assert confirmed_settings["schedule_week_mask"] == 0b0010101
+        assert confirmed_settings["revision"] == 2
 
         mismatch = expect_http_error(
             409,
@@ -130,7 +190,10 @@ def main() -> None:
         server.server_close()
         thread.join(timeout=2)
 
-    print("PASS: simulator authentication, identity, reset, and rejection contract")
+        print(
+            "PASS: simulator authentication, identity, settings, reset, "
+            "and rejection contract"
+        )
     print("No start or stop command was accepted.")
 
 

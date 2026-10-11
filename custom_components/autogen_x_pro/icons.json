@@ -5,6 +5,14 @@
         "default": "mdi:alert-circle-check-outline"
       }
     },
+    "number": {
+      "battery_low_voltage": {"default": "mdi:battery-arrow-down-outline"},
+      "battery_high_voltage": {"default": "mdi:battery-arrow-up-outline"},
+      "temperature_low_c": {"default": "mdi:thermometer-chevron-down"},
+      "temperature_high_c": {"default": "mdi:thermometer-chevron-up"},
+      "schedule_duration_minutes": {"default": "mdi:timer-cog-outline"},
+      "schedule_utc_offset_hours": {"default": "mdi:map-clock-outline"}
+    },
     "sensor": {
       "controller_state": {
         "default": "mdi:state-machine"
@@ -19,6 +27,35 @@
     "switch": {
       "generator_control": {
         "default": "mdi:engine"
+      },
+      "schedule_enabled": {
+        "default": "mdi:calendar-clock"
+      },
+      "schedule_monday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_tuesday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_wednesday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_thursday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_friday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_saturday": {
+        "default": "mdi:calendar-today"
+      },
+      "schedule_sunday": {
+        "default": "mdi:calendar-today"
+      }
+    },
+    "time": {
+      "schedule_start_time": {
+        "default": "mdi:clock-start"
       }
     }
   }

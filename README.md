@@ -63,6 +63,19 @@ active error, and the controller rejects the command if the error has already
 cleared. Reset uses the existing controller error-clear path and never drives a
 relay directly.
 
+Firmware that advertises the `settings` capability also provides native Home
+Assistant configuration entities for:
+
+- low battery start voltage and high battery cutoff voltage;
+- minimum and maximum controller temperature;
+- weekly timer enable, start time, run duration, UTC offset, and weekdays.
+
+These appear in the controller device's **Configuration** section. Changes are
+validated and stored by the controller, then returned to Home Assistant as
+confirmed values. The same stored values remain available to the existing
+AutoGen cloud and mobile workflows; Home Assistant does not keep a competing
+copy or replace the controller's scheduling logic.
+
 Every command includes the permanent AutoGen device ID, requires a paired token,
 and enters the controller through its existing command/state-machine path. The
 Home Assistant integration does not manipulate generator GPIO directly.
@@ -93,6 +106,9 @@ controller directly on the LAN every two seconds so short generator start,
 retry, and pause transitions remain visible. The `Cloud connection` entity
 reports the controller's existing AutoGen cloud status; Home Assistant traffic
 does not pass through that cloud connection.
+
+Configuration is refreshed from the controller every ten seconds, so changes
+made through the existing AutoGen cloud path also appear in Home Assistant.
 
 Cloud fallback for Home Assistant is not included in the local integration. It
 requires a separately designed backend authorization contract and will not be

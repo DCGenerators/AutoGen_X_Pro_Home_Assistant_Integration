@@ -14,5 +14,6 @@ API_INFO_PATH: Final = "/api/v1/info"
 API_PAIR_PATH: Final = "/api/v1/pair"
 API_STATUS_PATH: Final = "/api/v1/status"
 API_COMMAND_PATH: Final = "/api/v1/command"
+API_SETTINGS_PATH: Final = "/api/v1/settings"
 
-PLATFORMS: Final = ["sensor", "binary_sensor", "switch", "button"]
+PLATFORMS: Final = ["sensor", "binary_sensor", "switch", "button", "number", "time"]

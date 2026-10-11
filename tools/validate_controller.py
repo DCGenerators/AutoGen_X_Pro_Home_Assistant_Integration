@@ -16,6 +16,7 @@ def request_json(
     *,
     token: str | None = None,
     payload: dict[str, Any] | None = None,
+    method: str | None = None,
 ) -> dict[str, Any]:
     body = json.dumps(payload).encode() if payload is not None else None
     headers = {"Content-Type": "application/json"}
@@ -25,7 +26,7 @@ def request_json(
         f"{base_url}{path}",
         data=body,
         headers=headers,
-        method="POST" if body is not None else "GET",
+        method=method or ("POST" if body is not None else "GET"),
     )
     try:
         with urlopen(request, timeout=10) as response:  # noqa: S310

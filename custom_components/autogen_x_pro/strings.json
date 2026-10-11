@@ -63,8 +63,27 @@
       "temperature": {"name": "Temperature"},
       "total_runtime": {"name": "Total runtime"}
     },
+    "number": {
+      "battery_low_voltage": {"name": "Low battery start voltage"},
+      "battery_high_voltage": {"name": "High battery cutoff voltage"},
+      "temperature_low_c": {"name": "Minimum temperature"},
+      "temperature_high_c": {"name": "Maximum temperature"},
+      "schedule_duration_minutes": {"name": "Weekly timer duration"},
+      "schedule_utc_offset_hours": {"name": "Weekly timer UTC offset"}
+    },
     "switch": {
-      "generator_control": {"name": "Generator control"}
+      "generator_control": {"name": "Generator control"},
+      "schedule_enabled": {"name": "Weekly timer"},
+      "schedule_monday": {"name": "Weekly timer Monday"},
+      "schedule_tuesday": {"name": "Weekly timer Tuesday"},
+      "schedule_wednesday": {"name": "Weekly timer Wednesday"},
+      "schedule_thursday": {"name": "Weekly timer Thursday"},
+      "schedule_friday": {"name": "Weekly timer Friday"},
+      "schedule_saturday": {"name": "Weekly timer Saturday"},
+      "schedule_sunday": {"name": "Weekly timer Sunday"}
+    },
+    "time": {
+      "schedule_start_time": {"name": "Weekly timer start time"}
     }
   },
   "title": "AutoGen X Pro"

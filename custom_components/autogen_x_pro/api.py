@@ -7,7 +7,13 @@ from typing import Any
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
-from .const import API_COMMAND_PATH, API_INFO_PATH, API_PAIR_PATH, API_STATUS_PATH
+from .const import (
+    API_COMMAND_PATH,
+    API_INFO_PATH,
+    API_PAIR_PATH,
+    API_SETTINGS_PATH,
+    API_STATUS_PATH,
+)
 from .models import AutoGenDeviceInfo
 
 
@@ -83,6 +89,26 @@ class AutoGenApiClient:
     async def async_get_status(self) -> dict[str, Any]:
         """Return the latest read-only controller snapshot."""
         payload = await self._async_request_json("GET", API_STATUS_PATH)
+        self._validate_device_id(str(payload.get("device_id", "")))
+        return payload
+
+    async def async_get_settings(self) -> dict[str, Any]:
+        """Return the controller-owned customer settings."""
+        payload = await self._async_request_json("GET", API_SETTINGS_PATH)
+        self._validate_device_id(str(payload.get("device_id", "")))
+        return payload
+
+    async def async_update_settings(
+        self, changes: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Update settings and return the controller-confirmed snapshot."""
+        if not self._expected_device_id:
+            raise AutoGenIdentityError("No expected AutoGen device ID is configured")
+        payload = await self._async_request_json(
+            "PATCH",
+            API_SETTINGS_PATH,
+            json={"device_id": self._expected_device_id, **changes},
+        )
         self._validate_device_id(str(payload.get("device_id", "")))
         return payload
 
