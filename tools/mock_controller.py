@@ -17,6 +17,7 @@ class ControllerState:
     """Mutable state held by the simulator."""
 
     generator_running = False
+    fault = True
     sequence = 0
     pairing_available = True
 
@@ -62,7 +63,7 @@ class Handler(BaseHTTPRequestHandler):
                     "model": "AutoGen X Pro",
                     "firmware_version": "3.4.0-ha.simulator",
                     "api_version": "1",
-                    "capabilities": ["status", "start_stop"],
+                    "capabilities": ["status", "start_stop", "reset_fault"],
                 },
             )
             return
@@ -79,10 +80,14 @@ class Handler(BaseHTTPRequestHandler):
                     "charge_current": 8.4 if running else 0.0,
                     "ac_voltage": 230.1 if running else 0.0,
                     "temperature_c": 31.2,
-                    "state": "running" if running else "standby",
-                    "state_code": 2 if running else 5,
+                    "state": (
+                        "fault"
+                        if ControllerState.fault
+                        else ("running" if running else "standby")
+                    ),
+                    "state_code": 4 if ControllerState.fault else (2 if running else 5),
                     "generator_running": running,
-                    "fault": False,
+                    "fault": ControllerState.fault,
                     "total_runtime_seconds": 381223,
                     "last_run_seconds": 1450,
                     "cloud_connected": True,
@@ -110,7 +115,7 @@ class Handler(BaseHTTPRequestHandler):
                     "firmware_version": "3.4.0-ha.simulator",
                     "api_version": "1",
                     "access_token": ACCESS_TOKEN,
-                    "capabilities": ["status", "start_stop"],
+                    "capabilities": ["status", "start_stop", "reset_fault"],
                     "scopes": ["status", "control"],
                 },
             )
@@ -124,18 +129,38 @@ class Handler(BaseHTTPRequestHandler):
             self._send(409, {"error": "device_id_mismatch"})
             return
         command = payload.get("command")
-        if command not in {"start", "stop"}:
+        if command not in {"start", "stop", "reset_fault"}:
             self._send(400, {"error": "unsupported_command"})
             return
-        ControllerState.generator_running = command == "start"
+        if command == "reset_fault":
+            if not ControllerState.fault:
+                self._send(
+                    409,
+                    {
+                        "device_id": DEVICE_ID,
+                        "command": command,
+                        "accepted": False,
+                        "reason": "no_active_fault",
+                        "state": "standby",
+                        "state_code": 5,
+                    },
+                )
+                return
+            ControllerState.fault = False
+        else:
+            ControllerState.generator_running = command == "start"
         self._send(
             202,
             {
                 "device_id": DEVICE_ID,
                 "command": command,
                 "accepted": True,
-                "state": "starting" if command == "start" else "stopped",
-                "state_code": 1 if command == "start" else 0,
+                "state": (
+                    "stopped"
+                    if command == "reset_fault"
+                    else ("starting" if command == "start" else "stopped")
+                ),
+                "state_code": 0 if command != "start" else 1,
                 "generator_running": ControllerState.generator_running,
             },
         )

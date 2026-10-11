@@ -15,6 +15,7 @@
 - [ ] Verify Zeroconf discovery, pairing, reload, restart, IP change, and removal.
 - [ ] Verify monitoring while AutoGen cloud, mobile app, BLE, and local AP remain operational.
 - [ ] Verify accepted and safely rejected start/stop commands on a test rig.
+- [ ] Verify accepted and safely rejected fault-reset commands for controller error states 4, 16, and 17.
 - [x] Choose and add the public open-source license.
 - [x] Publish the GitHub repository and enable Issues.
 - [x] Add repository description and topics: `home-assistant`, `hacs`, `autogen-x-pro`.

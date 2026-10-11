@@ -51,6 +51,12 @@ temperature, controller state, runtime, generator-running, fault, and cloud
 connection entities. A generator control switch is created only when firmware
 advertises the `start_stop` capability.
 
+A **Reset fault** button is created only when firmware advertises the
+`reset_fault` capability. It is available only while the controller reports an
+active error, and the controller rejects the command if the error has already
+cleared. Reset uses the existing controller error-clear path and never drives a
+relay directly.
+
 Every command includes the permanent AutoGen device ID, requires a paired token,
 and enters the controller through its existing command/state-machine path. The
 Home Assistant integration does not manipulate generator GPIO directly.

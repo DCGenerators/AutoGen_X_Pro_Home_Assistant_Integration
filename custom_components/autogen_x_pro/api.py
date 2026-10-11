@@ -88,7 +88,7 @@ class AutoGenApiClient:
 
     async def async_command(self, command: str) -> dict[str, Any]:
         """Send an authenticated command to the identified controller."""
-        if command not in {"start", "stop"}:
+        if command not in {"start", "stop", "reset_fault"}:
             raise AutoGenApiError(f"Unsupported command: {command}")
         if not self._expected_device_id:
             raise AutoGenIdentityError("No expected AutoGen device ID is configured")

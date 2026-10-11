@@ -43,6 +43,7 @@ def expect_http_error(
 def main() -> None:
     """Run positive and negative protocol checks without real hardware."""
     ControllerState.generator_running = False
+    ControllerState.fault = True
     ControllerState.sequence = 0
     ControllerState.pairing_available = True
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -85,6 +86,7 @@ def main() -> None:
         assert info["device_id"] == DEVICE_ID
         assert status["device_id"] == DEVICE_ID
         assert status["generator_running"] is False
+        assert status["fault"] is True
 
         mismatch = expect_http_error(
             409,
@@ -105,12 +107,30 @@ def main() -> None:
         )
         assert unsupported["error"] == "unsupported_command"
         assert ControllerState.generator_running is False
+
+        reset = request_json(
+            base_url,
+            "/api/v1/command",
+            token=ACCESS_TOKEN,
+            payload={"device_id": DEVICE_ID, "command": "reset_fault"},
+        )
+        assert reset["accepted"] is True
+        assert ControllerState.fault is False
+
+        repeated_reset = expect_http_error(
+            409,
+            base_url,
+            "/api/v1/command",
+            token=ACCESS_TOKEN,
+            payload={"device_id": DEVICE_ID, "command": "reset_fault"},
+        )
+        assert repeated_reset["reason"] == "no_active_fault"
     finally:
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
 
-    print("PASS: simulator authentication, identity, and rejection contract")
+    print("PASS: simulator authentication, identity, reset, and rejection contract")
     print("No start or stop command was accepted.")
 
 

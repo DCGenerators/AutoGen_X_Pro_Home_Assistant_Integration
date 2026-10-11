@@ -15,4 +15,4 @@ API_PAIR_PATH: Final = "/api/v1/pair"
 API_STATUS_PATH: Final = "/api/v1/status"
 API_COMMAND_PATH: Final = "/api/v1/command"
 
-PLATFORMS: Final = ["sensor", "binary_sensor", "switch"]
+PLATFORMS: Final = ["sensor", "binary_sensor", "switch", "button"]

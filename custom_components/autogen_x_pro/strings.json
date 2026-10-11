@@ -46,6 +46,9 @@
     }
   },
   "entity": {
+    "button": {
+      "reset_fault": {"name": "Reset fault"}
+    },
     "binary_sensor": {
       "cloud_connected": {"name": "Cloud connection"},
       "fault": {"name": "Fault"},
