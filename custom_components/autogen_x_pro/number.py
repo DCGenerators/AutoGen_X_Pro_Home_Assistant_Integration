@@ -33,6 +33,7 @@ class AutoGenNumberDescription(NumberEntityDescription):
     minimum: float
     maximum: float
     step: float
+    integer: bool = False
 
 
 NUMBERS = (
@@ -79,6 +80,7 @@ NUMBERS = (
         minimum=1,
         maximum=1440,
         step=1,
+        integer=True,
         native_unit_of_measurement=UnitOfTime.MINUTES,
     ),
     AutoGenNumberDescription(
@@ -88,6 +90,7 @@ NUMBERS = (
         minimum=-12,
         maximum=14,
         step=1,
+        integer=True,
         native_unit_of_measurement=UnitOfTime.HOURS,
     ),
 )
@@ -130,6 +133,9 @@ class AutoGenSettingsNumber(AutoGenEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Validate and persist the value through the controller API."""
+        api_value: float | int = (
+            int(value) if self.entity_description.integer else value
+        )
         await self.coordinator.async_update_settings(
-            {self.entity_description.value_key: value}
+            {self.entity_description.value_key: api_value}
         )
