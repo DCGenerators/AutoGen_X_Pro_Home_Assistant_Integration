@@ -47,6 +47,9 @@ def main() -> None:
     ControllerState.fault = True
     ControllerState.sequence = 0
     ControllerState.pairing_available = True
+    ControllerState.loragen_connected = True
+    ControllerState.loragen_relay_1 = False
+    ControllerState.loragen_relay_2 = False
     ControllerState.settings = {
         "revision": 1,
         "battery_low_voltage": 11.0,
@@ -99,9 +102,12 @@ def main() -> None:
         status = request_json(base_url, "/api/v1/status", token=ACCESS_TOKEN)
         assert info["device_id"] == DEVICE_ID
         assert "settings" in info["capabilities"]
+        assert "loragen" in info["capabilities"]
         assert status["device_id"] == DEVICE_ID
         assert status["generator_running"] is False
         assert status["fault"] is True
+        assert status["loragen_connected"] is True
+        assert status["loragen_node_id"] == 100131
 
         settings = request_json(base_url, "/api/v1/settings", token=ACCESS_TOKEN)
         assert settings["battery_low_voltage"] == 11.0
@@ -166,6 +172,19 @@ def main() -> None:
             payload={"device_id": DEVICE_ID, "command": "unsupported"},
         )
         assert unsupported["error"] == "unsupported_command"
+        assert ControllerState.generator_running is False
+
+        relay = request_json(
+            base_url,
+            "/api/v1/command",
+            token=ACCESS_TOKEN,
+            payload={
+                "device_id": DEVICE_ID,
+                "command": "loragen_relay_1_on",
+            },
+        )
+        assert relay["accepted"] is True
+        assert ControllerState.loragen_relay_1 is True
         assert ControllerState.generator_running is False
 
         reset = request_json(

@@ -46,6 +46,21 @@ BINARY_SENSORS = (
     ),
 )
 
+LORAGEN_BINARY_SENSORS = (
+    AutoGenBinarySensorDescription(
+        key="loragen_connected",
+        translation_key="loragen_connected",
+        value_key="loragen_connected",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+    ),
+    AutoGenBinarySensorDescription(
+        key="loragen_ac_input",
+        translation_key="loragen_ac_input",
+        value_key="loragen_ac_input",
+        device_class=BinarySensorDeviceClass.POWER,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -55,9 +70,12 @@ async def async_setup_entry(
     """Create all read-only binary sensor entities."""
     coordinator: AutoGenCoordinator = hass.data[DOMAIN][entry.entry_id]
     device = await coordinator.client.async_get_info()
+    descriptions = list(BINARY_SENSORS)
+    if "loragen" in device.capabilities:
+        descriptions.extend(LORAGEN_BINARY_SENSORS)
     async_add_entities(
         AutoGenBinarySensor(coordinator, device, description)
-        for description in BINARY_SENSORS
+        for description in descriptions
     )
 
 

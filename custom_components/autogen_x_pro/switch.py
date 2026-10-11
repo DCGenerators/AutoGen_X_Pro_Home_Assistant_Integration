@@ -54,6 +54,11 @@ async def async_setup_entry(
                 ("sunday", 1 << 6),
             )
         )
+    if "loragen" in device.capabilities:
+        entities.extend(
+            AutoGenLoRaGenRelaySwitch(coordinator, device, relay)
+            for relay in (1, 2)
+        )
     async_add_entities(entities)
 
 
@@ -138,4 +143,45 @@ class AutoGenScheduleSwitch(AutoGenEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Disable the schedule or weekday."""
+        await self._async_set_state(False)
+
+
+class AutoGenLoRaGenRelaySwitch(AutoGenEntity, SwitchEntity):
+    """Optimistic relay control for the legacy LoRaGen UART protocol."""
+
+    _attr_assumed_state = True
+
+    def __init__(self, coordinator, device, relay: int) -> None:
+        super().__init__(coordinator, device, f"loragen_relay_{relay}")
+        self._relay = relay
+        self._attr_translation_key = f"loragen_relay_{relay}"
+
+    @property
+    def available(self) -> bool:
+        """Make relay control unavailable when node telemetry is stale."""
+        return super().available and bool(
+            self.coordinator.data.get("loragen_connected")
+        )
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return the last command because the legacy node has no relay ACK."""
+        known = self.coordinator.data.get(f"loragen_relay_{self._relay}_known")
+        if not known:
+            return None
+        return bool(self.coordinator.data.get(f"loragen_relay_{self._relay}"))
+
+    async def _async_set_state(self, enabled: bool) -> None:
+        action = "on" if enabled else "off"
+        await self.coordinator.client.async_command(
+            f"loragen_relay_{self._relay}_{action}"
+        )
+        await self.coordinator.async_request_refresh()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Request relay activation over the existing LoRa protocol."""
+        await self._async_set_state(True)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Request relay deactivation over the existing LoRa protocol."""
         await self._async_set_state(False)

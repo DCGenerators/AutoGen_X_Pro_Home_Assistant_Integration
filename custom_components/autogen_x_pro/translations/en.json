@@ -52,7 +52,9 @@
     "binary_sensor": {
       "cloud_connected": {"name": "Cloud connection"},
       "fault": {"name": "Fault"},
-      "generator_running": {"name": "Generator running"}
+      "generator_running": {"name": "Generator running"},
+      "loragen_connected": {"name": "LoRaGen connection"},
+      "loragen_ac_input": {"name": "LoRaGen AC input"}
     },
     "sensor": {
       "ac_voltage": {"name": "AC voltage"},
@@ -60,6 +62,11 @@
       "charge_current": {"name": "Charge current"},
       "controller_state": {"name": "Controller state"},
       "last_run_duration": {"name": "Last run duration"},
+      "loragen_node_id": {"name": "LoRaGen node ID"},
+      "loragen_analog_1_raw": {"name": "LoRaGen analogue input 1"},
+      "loragen_analog_2_raw": {"name": "LoRaGen analogue input 2"},
+      "loragen_analog_3_raw": {"name": "LoRaGen analogue input 3"},
+      "loragen_last_seen": {"name": "LoRaGen last seen"},
       "temperature": {"name": "Temperature"},
       "total_runtime": {"name": "Total runtime"}
     },
@@ -73,6 +80,8 @@
     },
     "switch": {
       "generator_control": {"name": "Generator control"},
+      "loragen_relay_1": {"name": "LoRaGen relay 1"},
+      "loragen_relay_2": {"name": "LoRaGen relay 2"},
       "schedule_enabled": {"name": "Weekly timer"},
       "schedule_monday": {"name": "Weekly timer Monday"},
       "schedule_tuesday": {"name": "Weekly timer Tuesday"},

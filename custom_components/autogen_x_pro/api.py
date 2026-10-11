@@ -114,7 +114,15 @@ class AutoGenApiClient:
 
     async def async_command(self, command: str) -> dict[str, Any]:
         """Send an authenticated command to the identified controller."""
-        if command not in {"start", "stop", "reset_fault"}:
+        if command not in {
+            "start",
+            "stop",
+            "reset_fault",
+            "loragen_relay_1_on",
+            "loragen_relay_1_off",
+            "loragen_relay_2_on",
+            "loragen_relay_2_off",
+        }:
             raise AutoGenApiError(f"Unsupported command: {command}")
         if not self._expected_device_id:
             raise AutoGenIdentityError("No expected AutoGen device ID is configured")

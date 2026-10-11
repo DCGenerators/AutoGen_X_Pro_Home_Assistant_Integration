@@ -22,11 +22,32 @@
       },
       "total_runtime": {
         "default": "mdi:history"
+      },
+      "loragen_node_id": {
+        "default": "mdi:identifier"
+      },
+      "loragen_analog_1_raw": {
+        "default": "mdi:sine-wave"
+      },
+      "loragen_analog_2_raw": {
+        "default": "mdi:sine-wave"
+      },
+      "loragen_analog_3_raw": {
+        "default": "mdi:sine-wave"
+      },
+      "loragen_last_seen": {
+        "default": "mdi:clock-check-outline"
       }
     },
     "switch": {
       "generator_control": {
         "default": "mdi:engine"
+      },
+      "loragen_relay_1": {
+        "default": "mdi:electric-switch"
+      },
+      "loragen_relay_2": {
+        "default": "mdi:electric-switch"
       },
       "schedule_enabled": {
         "default": "mdi:calendar-clock"

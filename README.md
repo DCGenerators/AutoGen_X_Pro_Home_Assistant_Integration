@@ -110,6 +110,18 @@ does not pass through that cloud connection.
 Configuration is refreshed from the controller every ten seconds, so changes
 made through the existing AutoGen cloud path also appear in Home Assistant.
 
+## Optional LoRaGen companion
+
+An X Pro built with the dedicated LoRaGen environment advertises an additional
+`loragen` capability. The same integration then creates connection and AC-input
+binary sensors, three raw analogue-input sensors, node diagnostics, and two
+relay switches. Ordinary X Pro firmware does not advertise this capability and
+therefore receives no LoRaGen entities.
+
+The relay controls use the existing LoRaGen commands and are shown as assumed
+state because the legacy node does not acknowledge its physical relay outputs.
+They become unavailable when node telemetry is more than ten seconds old.
+
 Cloud fallback for Home Assistant is not included in the local integration. It
 requires a separately designed backend authorization contract and will not be
 enabled implicitly or by sharing the mobile app's credentials.

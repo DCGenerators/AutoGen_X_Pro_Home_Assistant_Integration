@@ -13,9 +13,11 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    EntityCategory,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfTemperature,
+    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -89,6 +91,41 @@ SENSORS = (
     ),
 )
 
+LORAGEN_SENSORS = (
+    AutoGenSensorDescription(
+        key="loragen_node_id",
+        translation_key="loragen_node_id",
+        value_key="loragen_node_id",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    AutoGenSensorDescription(
+        key="loragen_analog_1_raw",
+        translation_key="loragen_analog_1_raw",
+        value_key="loragen_analog_1_raw",
+        suggested_display_precision=1,
+    ),
+    AutoGenSensorDescription(
+        key="loragen_analog_2_raw",
+        translation_key="loragen_analog_2_raw",
+        value_key="loragen_analog_2_raw",
+        suggested_display_precision=1,
+    ),
+    AutoGenSensorDescription(
+        key="loragen_analog_3_raw",
+        translation_key="loragen_analog_3_raw",
+        value_key="loragen_analog_3_raw",
+        suggested_display_precision=1,
+    ),
+    AutoGenSensorDescription(
+        key="loragen_last_seen",
+        translation_key="loragen_last_seen",
+        value_key="loragen_last_seen_seconds",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -98,8 +135,12 @@ async def async_setup_entry(
     """Create all read-only sensor entities."""
     coordinator: AutoGenCoordinator = hass.data[DOMAIN][entry.entry_id]
     device = await coordinator.client.async_get_info()
+    descriptions = list(SENSORS)
+    if "loragen" in device.capabilities:
+        descriptions.extend(LORAGEN_SENSORS)
     async_add_entities(
-        AutoGenSensor(coordinator, device, description) for description in SENSORS
+        AutoGenSensor(coordinator, device, description)
+        for description in descriptions
     )
 
 

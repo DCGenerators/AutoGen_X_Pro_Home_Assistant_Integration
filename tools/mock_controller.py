@@ -20,6 +20,9 @@ class ControllerState:
     fault = True
     sequence = 0
     pairing_available = True
+    loragen_connected = True
+    loragen_relay_1 = False
+    loragen_relay_2 = False
     settings = {
         "revision": 1,
         "battery_low_voltage": 11.0,
@@ -81,6 +84,7 @@ class Handler(BaseHTTPRequestHandler):
                         "start_stop",
                         "reset_fault",
                         "settings",
+                        "loragen",
                     ],
                 },
             )
@@ -109,6 +113,18 @@ class Handler(BaseHTTPRequestHandler):
                     "total_runtime_seconds": 381223,
                     "last_run_seconds": 1450,
                     "cloud_connected": True,
+                    "loragen_connected": ControllerState.loragen_connected,
+                    "loragen_node_id": 100131,
+                    "loragen_analog_1_raw": 1234.5,
+                    "loragen_analog_2_raw": 2345.5,
+                    "loragen_analog_3_raw": 3456.5,
+                    "loragen_ac_input": True,
+                    "loragen_last_seen_seconds": 1,
+                    "loragen_sequence": ControllerState.sequence,
+                    "loragen_relay_1_known": True,
+                    "loragen_relay_1": ControllerState.loragen_relay_1,
+                    "loragen_relay_2_known": True,
+                    "loragen_relay_2": ControllerState.loragen_relay_2,
                 },
             )
             return
@@ -141,6 +157,7 @@ class Handler(BaseHTTPRequestHandler):
                         "start_stop",
                         "reset_fault",
                         "settings",
+                        "loragen",
                     ],
                     "scopes": ["status", "control", "configure"],
                 },
@@ -155,8 +172,36 @@ class Handler(BaseHTTPRequestHandler):
             self._send(409, {"error": "device_id_mismatch"})
             return
         command = payload.get("command")
-        if command not in {"start", "stop", "reset_fault"}:
+        supported_commands = {
+            "start",
+            "stop",
+            "reset_fault",
+            "loragen_relay_1_on",
+            "loragen_relay_1_off",
+            "loragen_relay_2_on",
+            "loragen_relay_2_off",
+        }
+        if command not in supported_commands:
             self._send(400, {"error": "unsupported_command"})
+            return
+        if command.startswith("loragen_"):
+            if not ControllerState.loragen_connected:
+                self._send(409, {"error": "loragen_unavailable"})
+                return
+            relay = 1 if "relay_1" in command else 2
+            enabled = command.endswith("_on")
+            setattr(ControllerState, f"loragen_relay_{relay}", enabled)
+            self._send(
+                202,
+                {
+                    "device_id": DEVICE_ID,
+                    "command": command,
+                    "accepted": True,
+                    "state": "standby",
+                    "state_code": 5,
+                    "generator_running": ControllerState.generator_running,
+                },
+            )
             return
         if command == "reset_fault":
             if not ControllerState.fault:
