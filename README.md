@@ -51,6 +51,12 @@ temperature, controller state, runtime, generator-running, fault, and cloud
 connection entities. A generator control switch is created only when firmware
 advertises the `start_stop` capability.
 
+The control switch stays on while the controller is starting, running, or in a
+start-retry pause. It automatically returns to off when the controller reports
+stopped, shutdown/cooldown, fault, standby, post-stop, or a two-wire fault. The
+separate **Generator running** entity continues to report the physical run
+signal.
+
 A **Reset fault** button is created only when firmware advertises the
 `reset_fault` capability. It is available only while the controller reports an
 active error, and the controller rejects the command if the error has already

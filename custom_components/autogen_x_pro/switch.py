@@ -11,6 +11,9 @@ from .const import DOMAIN
 from .coordinator import AutoGenCoordinator
 from .entity import AutoGenEntity
 
+_CONTROL_ON_STATES = frozenset({1, 2, 6, 7, 10, 11, 12, 13, 14, 15})
+_CONTROL_OFF_STATES = frozenset({0, 3, 4, 5, 9, 16, 17, 18})
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -34,7 +37,16 @@ class AutoGenGeneratorSwitch(AutoGenEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Reflect confirmed run state, not merely the last requested state."""
+        """Reflect whether the controller is executing an operating sequence."""
+        state_code = self.coordinator.data.get("state_code")
+        if state_code in _CONTROL_ON_STATES:
+            return True
+        if state_code in _CONTROL_OFF_STATES:
+            return False
+
+        # Retain sensible behavior with older or future firmware that does not
+        # provide a recognized state code. The separate Generator running
+        # binary sensor remains the authoritative physical run indication.
         value = self.coordinator.data.get("generator_running")
         return bool(value) if value is not None else None
 
