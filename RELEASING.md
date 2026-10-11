@@ -11,7 +11,7 @@
 - [x] Validate the integration against the controller simulator.
 - [x] Flash only the isolated `esp32dev_home_assistant` target to a test controller.
 - [ ] Complete every item in the firmware bench-test checklist.
-- [ ] Install through HACS on a clean Home Assistant system.
+- [x] Install through HACS on a clean Home Assistant system.
 - [ ] Verify Zeroconf discovery, pairing, reload, restart, IP change, and removal.
 - [ ] Verify monitoring while AutoGen cloud, mobile app, BLE, and local AP remain operational.
 - [ ] Verify accepted and safely rejected start/stop commands on a test rig.
@@ -25,6 +25,23 @@
 The first public tag should remain a pre-release until the real-controller and
 clean-install tests pass. Do not publish a release that can control a generator
 based only on simulator results.
+
+## v0.2.0 live verification
+
+Verified on 2026-10-11 with Home Assistant OS 18.3 / Core 2026.10.0 and test
+controller firmware 3.4.0:
+
+- Installed commit `df4bb18` through HACS and restarted Home Assistant cleanly.
+- The existing device registry entry, permanent AutoGen device ID, area, and all
+  11 entity identities survived the restart.
+- Local polling resumed after restart with no `autogen_x_pro` Core log issues.
+- The control entity remained available without issuing a generator command.
+- The integration exposes **Reconfigure** for host/port recovery.
+- Cloud connection remained reported as connected after the local AP session.
+
+Still required before promoting the pre-release: IP-change and removal recovery,
+a sustained simultaneous cloud/mobile/BLE/local-AP test, and supervised accepted
+and rejected start/stop tests on a safe generator rig.
 
 ## Release versioning
 
